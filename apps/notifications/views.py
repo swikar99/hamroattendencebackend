@@ -2,13 +2,20 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Notification
 from .serializers import NotificationSerializer
 
 
+@extend_schema(tags=['Notifications'])
+@extend_schema_view(
+    list=extend_schema(summary='List my notifications'),
+    retrieve=extend_schema(summary='Get a notification'),
+)
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class      = NotificationSerializer
+    permission_classes    = [IsAuthenticated]
+    lookup_value_regex    = r'[0-9]+'
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)

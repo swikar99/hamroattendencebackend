@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import ReportJob
 
 
@@ -15,6 +16,7 @@ class ReportJobSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'status', 'error', 'created_at', 'completed_at',
                             'requested_by_name', 'file_url']
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_file_url(self, obj):
         if obj.file_path:
             request = self.context.get('request')

@@ -174,12 +174,25 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Hamro Attendance API',
     'DESCRIPTION': (
         'Multi-tenant Attendance Management System — supports Schools, Banks, '
-        'Hospitals, Companies and any organisation. Features: JWT auth, '
-        'shift management, geo-fence check-in, leave workflows, reports.'
+        'Hospitals, Companies and any organisation.\n\n'
+        '**Authentication:** Use `POST /api/auth/login/` to obtain a Bearer token, '
+        'then click **Authorize** and enter `Bearer <token>`.'
     ),
     'VERSION': '2.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+        'defaultModelsExpandDepth': 1,
+        'defaultModelExpandDepth': 2,
+        'docExpansion': 'none',
+    },
+    'ENUM_NAME_OVERRIDES': {
+        'AttendanceMethodEnum': 'apps.attendance.models.AttendanceRecord.METHOD_CHOICES',
+    },
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': True,
     'TAGS': [
         {'name': 'Auth',          'description': 'JWT login, refresh, logout, register'},
         {'name': 'Users',         'description': 'User profiles and management'},
@@ -191,4 +204,14 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Reports',       'description': 'Excel / PDF report generation'},
         {'name': 'Notifications', 'description': 'In-app notifications'},
     ],
+    'SECURITY': [{'BearerAuth': []}],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
 }

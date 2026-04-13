@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.db.models import Q
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.types import OpenApiTypes
 
 from .models import AttendanceRecord, AttendanceRegularization
 from .serializers import (
@@ -59,6 +61,15 @@ def _validate_geo(org, location_str):
     return True, ''
 
 
+@extend_schema(tags=['Attendance'])
+@extend_schema_view(
+    list=extend_schema(summary='List attendance records'),
+    retrieve=extend_schema(summary='Get a single record'),
+    create=extend_schema(summary='Create attendance record (admin)'),
+    update=extend_schema(summary='Update attendance record'),
+    partial_update=extend_schema(summary='Partial update'),
+    destroy=extend_schema(summary='Delete attendance record'),
+)
 class AttendanceRecordViewSet(viewsets.ModelViewSet):
     serializer_class   = AttendanceRecordSerializer
     permission_classes = [IsAuthenticated, IsSameOrg]
@@ -99,6 +110,11 @@ class AttendanceRecordViewSet(viewsets.ModelViewSet):
 
     # ── Check-in ──────────────────────────────────────────────────────────────
 
+    @extend_schema(
+        request=CheckInSerializer,
+        responses={200: AttendanceRecordSerializer, 400: OpenApiResponse(description='Already checked in / geo-fence failed')},
+        summary='Check in for today',
+    )
     @action(detail=False, methods=['post'])
     def check_in(self, request):
         employee = request.user
@@ -155,6 +171,11 @@ class AttendanceRecordViewSet(viewsets.ModelViewSet):
 
     # ── Check-out ─────────────────────────────────────────────────────────────
 
+    @extend_schema(
+        request=CheckOutSerializer,
+        responses={200: AttendanceRecordSerializer, 400: OpenApiResponse(description='No active check-in found')},
+        summary='Check out for today',
+    )
     @action(detail=False, methods=['post'])
     def check_out(self, request):
         employee = request.user

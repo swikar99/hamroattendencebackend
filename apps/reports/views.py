@@ -4,6 +4,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.types import OpenApiTypes
 
 from apps.accounts.permissions import IsHROrAbove
 from .models import ReportJob
@@ -11,13 +13,27 @@ from .serializers import ReportJobSerializer
 from . import generators
 from .tasks import generate_report_async
 
+_FILE_RESPONSE = OpenApiResponse(description='Excel or PDF file download')
+_DATE_PARAM    = OpenApiParameter('date',  OpenApiTypes.DATE, description='Date (YYYY-MM-DD), default today')
+_FORMAT_PARAM  = OpenApiParameter('format', str, enum=['excel', 'pdf'], description='Output format, default excel')
+_YEAR_PARAM    = OpenApiParameter('year',  OpenApiTypes.INT, description='Year, default current year')
+_MONTH_PARAM   = OpenApiParameter('month', OpenApiTypes.INT, description='Month (1-12), default current month')
+_START_PARAM   = OpenApiParameter('start_date', OpenApiTypes.DATE, description='Start date (YYYY-MM-DD)', required=True)
+_END_PARAM     = OpenApiParameter('end_date',   OpenApiTypes.DATE, description='End date (YYYY-MM-DD)',   required=True)
 
+
+@extend_schema(tags=['Reports'])
+@extend_schema_view(
+    list=extend_schema(summary='List all report jobs'),
+    retrieve=extend_schema(summary='Get report job status / download URL'),
+)
 class ReportViewSet(viewsets.ReadOnlyModelViewSet):
     """
     List/retrieve report jobs and trigger new report generation.
     Supports both synchronous (small) and async (large) generation.
     """
-    serializer_class   = ReportJobSerializer
+    serializer_class      = ReportJobSerializer
+    lookup_value_regex    = r'[0-9]+'
     permission_classes = [IsAuthenticated, IsHROrAbove]
 
     def get_queryset(self):
@@ -25,6 +41,7 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
 
     # ── Sync download helpers ─────────────────────────────────────────────────
 
+    @extend_schema(summary='Download daily attendance report', parameters=[_DATE_PARAM, _FORMAT_PARAM], responses={200: _FILE_RESPONSE})
     @action(detail=False, methods=['get'])
     def daily(self, request):
         """
@@ -53,6 +70,7 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
         resp['Content-Disposition'] = f'attachment; filename="{filename}"'
         return resp
 
+    @extend_schema(summary='Download monthly attendance report (Excel)', parameters=[_YEAR_PARAM, _MONTH_PARAM], responses={200: _FILE_RESPONSE})
     @action(detail=False, methods=['get'])
     def monthly(self, request):
         """GET /reports/monthly/?year=YYYY&month=MM"""
@@ -72,6 +90,7 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
         resp['Content-Disposition'] = f'attachment; filename="monthly_{year}_{month:02d}.xlsx"'
         return resp
 
+    @extend_schema(summary='Download department-wise report (Excel)', parameters=[_START_PARAM, _END_PARAM], responses={200: _FILE_RESPONSE})
     @action(detail=False, methods=['get'])
     def department(self, request):
         """GET /reports/department/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD"""
@@ -91,6 +110,7 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
         resp['Content-Disposition'] = f'attachment; filename="department_{start}_{end}.xlsx"'
         return resp
 
+    @extend_schema(summary='Download payroll timesheet (Excel)', parameters=[_YEAR_PARAM, _MONTH_PARAM], responses={200: _FILE_RESPONSE})
     @action(detail=False, methods=['get'])
     def payroll(self, request):
         """GET /reports/payroll/?year=YYYY&month=MM"""
@@ -112,6 +132,7 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
 
     # ── Async job trigger ─────────────────────────────────────────────────────
 
+    @extend_schema(summary='Queue an async report generation job', request=ReportJobSerializer, responses={202: ReportJobSerializer})
     @action(detail=False, methods=['post'])
     def queue(self, request):
         """

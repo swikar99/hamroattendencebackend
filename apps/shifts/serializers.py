@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Shift, ShiftAssignment, Roster, Holiday
 
 
@@ -23,6 +24,7 @@ class ShiftAssignmentSerializer(serializers.ModelSerializer):
                   'effective_from', 'effective_to', 'created_by', 'created_at']
         read_only_fields = ['id', 'created_at', 'created_by']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 
@@ -42,6 +44,7 @@ class RosterSerializer(serializers.ModelSerializer):
                   'shift', 'shift_name', 'notes', 'created_by', 'created_at']
         read_only_fields = ['id', 'created_at', 'created_by']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 

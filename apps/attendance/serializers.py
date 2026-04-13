@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import AttendanceRecord, AttendanceRegularization
 
 
@@ -20,9 +21,11 @@ class AttendanceRecordSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'working_hours', 'overtime_hours', 'is_late', 'late_minutes',
                             'is_half_day', 'is_regularized', 'created_at', 'updated_at']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_marked_by_name(self, obj):
         return obj.marked_by.get_full_name() if obj.marked_by else None
 
@@ -62,8 +65,10 @@ class AttendanceRegularizationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'status', 'reviewed_by', 'reviewed_at', 'rejection_reason', 'created_at', 'updated_at']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_reviewed_by_name(self, obj):
         return obj.reviewed_by.get_full_name() if obj.reviewed_by else None

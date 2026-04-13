@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import update_session_auth_hash
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from .models import CustomUser
 from .serializers import (
@@ -70,6 +71,15 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(UserSerializer(qs, many=True, context={'request': request}).data)
 
 
+@extend_schema(
+    request=RegisterSerializer,
+    responses={
+        201: OpenApiResponse(description='Registration successful'),
+        400: OpenApiResponse(description='Validation errors'),
+    },
+    tags=['Auth'],
+    summary='Register a new user (email domain determines organisation)',
+)
 @api_view(['POST'])
 @perm_dec([AllowAny])
 def register_view(request):

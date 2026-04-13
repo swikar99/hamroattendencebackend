@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import LeaveType, LeaveBalance, LeaveRequest, LeaveApproval
 
 
@@ -26,6 +27,7 @@ class LeaveBalanceSerializer(serializers.ModelSerializer):
                   'lapsed', 'remaining', 'total_available', 'updated_at']
         read_only_fields = ['id', 'updated_at']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 
@@ -38,6 +40,7 @@ class LeaveApprovalSerializer(serializers.ModelSerializer):
         fields = ['id', 'leave_request', 'approver', 'approver_name', 'level', 'action', 'comments', 'acted_at']
         read_only_fields = ['id', 'acted_at']
 
+    @extend_schema_field(serializers.CharField())
     def get_approver_name(self, obj):
         return obj.approver.get_full_name()
 
@@ -60,9 +63,11 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'total_days', 'status', 'final_approved_by',
                             'rejection_reason', 'created_at', 'updated_at']
 
+    @extend_schema_field(serializers.CharField())
     def get_employee_name(self, obj):
         return obj.employee.get_full_name()
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_approved_by_name(self, obj):
         return obj.final_approved_by.get_full_name() if obj.final_approved_by else None
 

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from datetime import date
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import LeaveType, LeaveBalance, LeaveRequest, LeaveApproval
 from .serializers import (
@@ -17,6 +18,7 @@ def _org(request):
     return request.user.organization
 
 
+@extend_schema(tags=['Leaves'])
 class LeaveTypeViewSet(viewsets.ModelViewSet):
     serializer_class   = LeaveTypeSerializer
     permission_classes = [IsAuthenticated]
@@ -35,6 +37,7 @@ class LeaveTypeViewSet(viewsets.ModelViewSet):
         serializer.save(organization=_org(self.request))
 
 
+@extend_schema(tags=['Leaves'])
 class LeaveBalanceViewSet(viewsets.ModelViewSet):
     serializer_class   = LeaveBalanceSerializer
     permission_classes = [IsAuthenticated]
@@ -90,6 +93,7 @@ class LeaveBalanceViewSet(viewsets.ModelViewSet):
         return Response({'allocated': created, 'year': year})
 
 
+@extend_schema(tags=['Leaves'])
 class LeaveRequestViewSet(viewsets.ModelViewSet):
     serializer_class   = LeaveRequestSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrManagerAbove]

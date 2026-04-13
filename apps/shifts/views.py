@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from datetime import date
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import Shift, ShiftAssignment, Roster, Holiday
 from .serializers import ShiftSerializer, ShiftAssignmentSerializer, RosterSerializer, HolidaySerializer
@@ -14,6 +15,7 @@ def _org(request):
     return request.user.organization
 
 
+@extend_schema(tags=['Shifts'])
 class ShiftViewSet(viewsets.ModelViewSet):
     serializer_class   = ShiftSerializer
     permission_classes = [IsAuthenticated, IsSameOrg]
@@ -34,6 +36,7 @@ class ShiftViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
 
+@extend_schema(tags=['Shifts'])
 class ShiftAssignmentViewSet(viewsets.ModelViewSet):
     serializer_class   = ShiftAssignmentSerializer
     permission_classes = [IsAuthenticated]
@@ -75,6 +78,7 @@ class ShiftAssignmentViewSet(viewsets.ModelViewSet):
         return Response(ShiftAssignmentSerializer(assignment).data)
 
 
+@extend_schema(tags=['Shifts'])
 class RosterViewSet(viewsets.ModelViewSet):
     serializer_class   = RosterSerializer
     permission_classes = [IsAuthenticated]
@@ -105,6 +109,7 @@ class RosterViewSet(viewsets.ModelViewSet):
         serializer.save(organization=_org(self.request), created_by=self.request.user)
 
 
+@extend_schema(tags=['Shifts'])
 class HolidayViewSet(viewsets.ModelViewSet):
     serializer_class   = HolidaySerializer
     permission_classes = [IsAuthenticated]

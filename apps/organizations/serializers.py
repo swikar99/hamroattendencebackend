@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Organization, OrganizationSettings, Department, AcademicYear, Class, Section, Subject, Student
 
 
@@ -32,9 +33,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
                   'manager', 'manager_name', 'parent', 'member_count', 'created_at']
         read_only_fields = ['id', 'created_at']
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_manager_name(self, obj):
         return obj.manager.get_full_name() if obj.manager else None
 
+    @extend_schema_field(serializers.IntegerField())
     def get_member_count(self, obj):
         return obj.members.filter(is_active=True).count()
 
