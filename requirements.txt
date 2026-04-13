@@ -1,0 +1,41 @@
+# Core
+Django==4.2.30
+djangorestframework==3.14.0
+python-decouple==3.8
+django-cors-headers==4.0.0
+
+# JWT Authentication
+djangorestframework-simplejwt==5.3.1
+
+# Filtering
+django-filter==23.5
+
+# API Documentation
+drf-spectacular==0.29.0
+
+# Image / File handling
+Pillow==9.5.0
+
+# PDF generation
+reportlab==4.4.10
+
+# Excel generation
+openpyxl==3.1.2
+
+# Data processing (reports)
+pandas==2.0.3
+
+# QR Code generation
+qrcode==8.2
+
+# Celery + Redis (async tasks / notifications)
+celery==5.3.6
+redis==5.0.1
+django-celery-beat==2.5.0
+django-celery-results==2.5.1
+
+# Geo-fence distance calculation
+geopy==2.4.1
+
+# JWT
+PyJWT==2.12.1
